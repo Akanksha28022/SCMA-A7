@@ -1,92 +1,49 @@
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
+import datetime
 
-# Title of the Streamlit app
-st.title('Fitness Planner')
+# Set the title of the app
+st.title("Fitness Planner")
 
-# Sidebar for navigation
-st.sidebar.title('Navigation')
-page = st.sidebar.radio('Go to', ['Home', 'Create Workout Plan', 'Track Progress', 'Visualize Progress'])
+# Get user input
+st.header("User Information")
+name = st.text_input("Name")
+age = st.number_input("Age", min_value=1, max_value=120, value=25)
+weight = st.number_input("Weight (kg)", min_value=20, max_value=200, value=70)
+height = st.number_input("Height (cm)", min_value=100, max_value=250, value=170)
 
-# Initialize session state for workout data
-if 'workouts' not in st.session_state:
-    st.session_state.workouts = []
+# Get fitness goals
+st.header("Fitness Goals")
+goal = st.selectbox("Select your fitness goal", ["Lose Weight", "Build Muscle", "Improve Stamina", "Maintain Fitness"])
+workout_days = st.multiselect("Days you can work out", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+start_date = st.date_input("Start Date", datetime.date.today())
 
-# Home Page
-if page == 'Home':
-    st.header('Welcome to Fitness Planner')
-    st.write('Use this app to create and manage your workout routines, track your progress, and visualize improvements over time.')
+# Get additional preferences
+st.header("Preferences")
+preferred_workout = st.multiselect("Preferred Workout Type", ["Cardio", "Strength Training", "HIIT", "Yoga", "Pilates"])
+dietary_restrictions = st.text_area("Any dietary restrictions?")
 
-# Create Workout Plan Page
-elif page == 'Create Workout Plan':
-    st.header('Create Workout Plan')
+# Submit button
+if st.button("Generate Fitness Plan"):
+    st.subheader("Your Fitness Plan")
+    st.write(f"*Name:* {name}")
+    st.write(f"*Age:* {age}")
+    st.write(f"*Weight:* {weight} kg")
+    st.write(f"*Height:* {height} cm")
+    st.write(f"*Goal:* {goal}")
+    st.write(f"*Workout Days:* {', '.join(workout_days)}")
+    st.write(f"*Start Date:* {start_date}")
+    st.write(f"*Preferred Workout Type:* {', '.join(preferred_workout)}")
+    st.write(f"*Dietary Restrictions:* {dietary_restrictions}")
 
-    with st.form(key='workout_form'):
-        name = st.text_input('Workout Name')
-        date = st.date_input('Date')
-        exercises = st.text_area('Exercises (separate each exercise with a comma)')
-        duration = st.number_input('Duration (minutes)', min_value=1)
+    # Simple fitness plan output
+    st.subheader("Recommended Plan")
+    if goal == "Lose Weight":
+        st.write("Focus on Cardio exercises and maintain a calorie deficit.")
+    elif goal == "Build Muscle":
+        st.write("Focus on Strength Training exercises and maintain a calorie surplus.")
+    elif goal == "Improve Stamina":
+        st.write("Incorporate a mix of Cardio and HIIT exercises.")
+    elif goal == "Maintain Fitness":
+        st.write("Maintain a balanced workout routine with a mix of Cardio and Strength Training.")
 
-        submit_button = st.form_submit_button(label='Add Workout')
-
-        if submit_button:
-            workout = {
-                'name': name,
-                'date': date,
-                'exercises': exercises.split(','),
-                'duration': duration
-            }
-            st.session_state.workouts.append(workout)
-            st.success('Workout added successfully!')
-
-    st.write('### Current Workout Plan')
-    st.dataframe(pd.DataFrame(st.session_state.workouts))
-
-# Track Progress Page
-elif page == 'Track Progress':
-    st.header('Track Progress')
-
-    if not st.session_state.workouts:
-        st.write('No workouts added yet.')
-    else:
-        st.write('### Completed Workouts')
-        for workout in st.session_state.workouts:
-            st.write(f"**{workout['name']}** on {workout['date']}")
-            st.write(f"Exercises: {', '.join(workout['exercises'])}")
-            st.write(f"Duration: {workout['duration']} minutes")
-            st.write('---')
-
-# Visualize Progress Page
-elif page == 'Visualize Progress':
-    st.header('Visualize Progress')
-
-    if not st.session_state.workouts:
-        st.write('No workouts added yet.')
-    else:
-        df = pd.DataFrame(st.session_state.workouts)
-        df['date'] = pd.to_datetime(df['date'])
-
-        # Plot total duration over time
-        st.write('### Total Duration Over Time')
-        fig, ax = plt.subplots()
-        df.groupby('date')['duration'].sum().plot(ax=ax)
-        plt.xlabel('Date')
-        plt.ylabel('Total Duration (minutes)')
-        plt.title('Total Workout Duration Over Time')
-        st.pyplot(fig)
-
-        # Plot number of workouts over time
-        st.write('### Number of Workouts Over Time')
-        fig, ax = plt.subplots()
-        df.groupby('date').size().plot(ax=ax)
-        plt.xlabel('Date')
-        plt.ylabel('Number of Workouts')
-        plt.title('Number of Workouts Over Time')
-        st.pyplot(fig)
-
-        # Display exercise frequency
-        st.write('### Exercise Frequency')
-        all_exercises = [exercise for workout in st.session_state.workouts for exercise in workout['exercises']]
-        exercise_counts = pd.Series(all_exercises).value_counts()
-        st.bar_chart(exercise_counts)
+    st.write("Ensure to stay hydrated and follow a balanced diet according to your dietary restrictions.")
